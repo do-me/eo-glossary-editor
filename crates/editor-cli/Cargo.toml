@@ -1,0 +1,15 @@
+[package]
+name = "eo-editor-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+editor-core = { path = "../editor-core" }
+serde_json.workspace = true
+clap = { version = "4", features = ["derive"] }
+
+tiny_http = { version = "0.12", optional = true }
+
+[features]
+test-server = ["dep:tiny_http"]

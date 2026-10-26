@@ -1,0 +1,20 @@
+# Planned application build output and local data
+node_modules/
+dist/
+target/
+src-tauri/target/
+.svelte-kit/
+.DS_Store
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.log
+
+.cache/
+playwright-report/
+test-results/
+src-tauri/gen/
+*.sqlite3*
