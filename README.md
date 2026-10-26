@@ -4,6 +4,10 @@ A desktop editor for [the CEOS Earth observation glossary](https://github.com/ce
 
 Search terms, filter by review team or discussion status, edit several terms in tabs, and resume your work later. One editing session produces one GitHub pull request; subsequent submissions update that PR.
 
+<img width="1645" height="1095" alt="image" src="https://github.com/user-attachments/assets/800e44e6-0def-43fd-bc05-71df98a05cf5" />
+<img width="1645" height="1095" alt="image" src="https://github.com/user-attachments/assets/ae7001f5-c7d4-45d3-b1af-5a16f302f830" />
+<img width="1645" height="1095" alt="image" src="https://github.com/user-attachments/assets/b2602942-5d34-4db5-b32d-066d4638195b" />
+
 ## Run locally
 
 Prerequisites for **development**: Node 24 LTS, npm, stable Rust, and the [Tauri platform prerequisites](https://v2.tauri.app/start/prerequisites/). End users of a packaged app do not need these tools, Git, or GitHub CLI.
