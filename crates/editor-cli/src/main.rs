@@ -150,6 +150,22 @@ fn serve(mut store: Store, port: u16, token: &str) -> editor_core::Result<()> {
                     let account = fixture_signed_in.then(|| serde_json::json!({"id":123,"login":"fixture-expert","name":"Fixture expert"}));
                     return Ok(serde_json::json!({"account":account,"clientIdConfigured":false}));
                 }
+                if name == "sign_in_token" {
+                    if v["data"]["token"].as_str() != Some("fixture-token-do-not-use") {
+                        return Err(editor_core::Error::new(
+                            "authentication",
+                            "The token was not accepted. Check its permissions and try again.",
+                        ));
+                    }
+                    fixture_signed_in = true;
+                    return Ok(
+                        serde_json::json!({"id":123,"login":"fixture-expert","name":"Fixture expert"}),
+                    );
+                }
+                if name == "sign_out" {
+                    fixture_signed_in = false;
+                    return Ok(serde_json::Value::Null);
+                }
                 if name == "fixture_sign_in" {
                     fixture_signed_in = true;
                     return Ok(serde_json::Value::Null);

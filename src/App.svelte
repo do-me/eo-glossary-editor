@@ -1,6 +1,7 @@
 <script lang="ts">
   import { SvelteMap } from 'svelte/reactivity';
   import { onMount, tick } from 'svelte';
+  import { version as appVersion } from '../package.json';
   import {
     Search,
     ListFilter,
@@ -90,6 +91,7 @@
   let contributionTitle = $state('');
   let contributionBody = $state('');
   let pat = $state('');
+  let tokenError = $state('');
   let clientId = $state('');
   let authKind = $state<'github_app' | 'oauth_app'>('github_app');
   let remember = $state(true);
@@ -722,12 +724,18 @@
     });
   }
   async function tokenSignIn() {
+    if (busy) return;
+    tokenError = '';
     const secret = pat;
     pat = '';
     await perform('Authenticating', async () => {
-      account = await api<Account>('sign_in_token', { token: secret, remember });
-      modal = null;
-      notice = `Signed in as ${account.login}.`;
+      try {
+        account = await api<Account>('sign_in_token', { token: secret, remember });
+        modal = null;
+        notice = `Signed in as ${account.login}.`;
+      } catch (e) {
+        tokenError = message(e);
+      }
     });
   }
   async function beginAuth() {
@@ -758,6 +766,7 @@
       device = null;
     }
     pat = '';
+    tokenError = '';
     modal = null;
   }
   async function followUp() {
@@ -1126,7 +1135,7 @@
                 placeholder="Explain the terminology changes and the sources you used."
               ></textarea></label
             >{#if !account}<button class="primary" onclick={() => (modal = 'account')}
-                ><Github size={15} /> Authenticate with GitHub</button
+                ><Github size={15} /> Sign in with a token</button
               >{:else}<div class="submit-footer">
                 <span class="muted small">Submitting as @{account.login}</span><button
                   class="primary"
@@ -1529,61 +1538,69 @@
                 })}>Sign out</button
             >
           </div>{:else}<p class="muted">
-            Sign in when you’re ready to submit. Browsing and editing work offline.
+            Sign in with a GitHub personal access token when you’re ready to submit. Browsing and
+            editing work offline.
           </p>
-          <label class="checkbox-label"
-            ><input type="checkbox" bind:checked={remember} /> Remember me in the system credential store</label
-          >{#if device}<div class="device-code">
-              <p>Enter this code on GitHub</p>
-              <strong>{device.userCode}</strong><button
-                onclick={() => void openLink(device!.verificationUrl).catch(fail)}
-                >Open GitHub<ArrowUpRight size={13} /></button
-              ><small>Waiting for authorization…</small>
-            </div>{:else}<button
-              class="primary auth-button"
-              onclick={beginAuth}
-              disabled={!clientConfigured || !!busy}
-              ><Github size={16} /> Authenticate with GitHub</button
-            >{#if !clientConfigured}<p class="small muted">
-                Device sign-in needs the editor’s registered public client ID. Configure it below or
-                use a token.
-              </p>{/if}{/if}
-          <details class="token-settings">
-            <summary>Use a personal access token</summary>
-            <form
-              onsubmit={(e) => {
-                e.preventDefault();
-                void tokenSignIn();
-              }}
+          <form
+            class="token-form"
+            aria-label="Personal access token sign-in"
+            onsubmit={(e) => {
+              e.preventDefault();
+              void tokenSignIn();
+            }}
+          >
+            <button
+              type="button"
+              class="text-button"
+              onclick={() => void openLink('https://github.com/settings/tokens/new').catch(fail)}
+              >Create a token on GitHub<ArrowUpRight size={13} /></button
             >
-              <label
-                >GitHub token<input
-                  type="password"
-                  bind:value={pat}
-                  autocomplete="off"
-                  placeholder="Token with public repository access"
-                  required
-                /></label
-              >
-              <p class="small muted">
-                Classic token: public_repo scope. Fine-grained token: repository Contents and Pull
-                requests write access. External contributors may need a classic token for
-                cross-owner forks.
-              </p>
-              <button type="submit" disabled={!pat || !!busy}>Sign in with token</button>
-            </form>
-          </details>{/if}
+            <p class="small muted">
+              Create a classic token with <code>public_repo</code> access for the public glossary.
+            </p>
+            <label
+              >Personal access token<input
+                type="password"
+                bind:value={pat}
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                placeholder="Paste your GitHub token"
+                required
+              /></label
+            >
+            <label class="checkbox-label"
+              ><input type="checkbox" bind:checked={remember} /> Remember me in the system credential
+              store</label
+            >
+            {#if tokenError}<p class="token-error" role="alert">{tokenError}</p>{/if}
+            <button type="submit" class="primary auth-button" disabled={!pat.trim() || !!busy}
+              ><Github size={16} /> Sign in with token</button
+            >
+            <p class="small muted">
+              Your token stays on this computer and is excluded from session exports.
+            </p>
+          </form>{/if}
         <details class="token-settings">
-          <summary>Configure GitHub authentication</summary>
+          <summary>Advanced: optional app sign-in</summary>
           <p class="small muted">
-            Register a GitHub App (recommended) with Device Flow enabled, or use an existing OAuth
-            app. A GitHub App uses selected-repository access with Contents and Pull requests write
-            permissions. Disable webhooks; no hosted service, private key, or client secret is
-            needed for device sign-in.
+            GitHub App / OAuth sign-in is an optional future experiment. Personal access tokens work
+            without registering an app.
           </p>
+          {#if !account && clientConfigured}
+            {#if device}<div class="device-code">
+                <p>Enter this code on GitHub</p>
+                <strong>{device.userCode}</strong><button
+                  onclick={() => void openLink(device!.verificationUrl).catch(fail)}
+                  >Open GitHub<ArrowUpRight size={13} /></button
+                ><small>Waiting for authorization…</small>
+              </div>
+            {:else}<button onclick={beginAuth} disabled={!!busy}>Sign in with registered app</button
+              >{/if}
+          {/if}
           <label class="auth-kind"
             >Application type<select bind:value={authKind}
-              ><option value="github_app">GitHub App (recommended)</option><option value="oauth_app"
+              ><option value="github_app">GitHub App</option><option value="oauth_app"
                 >OAuth app</option
               ></select
             ></label
@@ -1591,25 +1608,27 @@
           <label
             >Public client ID<input
               bind:value={clientId}
-              placeholder="Ov23…"
+              placeholder="Public client ID"
               autocomplete="off"
             /></label
-          ><button
+          >
+          <button
             disabled={!clientId || !!busy}
             onclick={() =>
               perform('Saving authentication settings', async () => {
                 await api('configure_auth', { clientId, kind: authKind });
                 clientConfigured = true;
-                notice = 'GitHub authentication configured.';
+                notice = 'Optional app authentication configured.';
               })}>Save client ID</button
-          ><button
+          >
+          <button
             class="text-button"
             onclick={() => void openLink('https://github.com/settings/developers').catch(fail)}
             >GitHub developer settings<ArrowUpRight size={12} /></button
           >
         </details>
         <div class="settings-note">
-          <p><strong>EO Glossary Editor</strong> · 0.1.0 · Desktop application</p>
+          <p><strong>EO Glossary Editor</strong> · {appVersion} · Desktop application</p>
           <p>{boot?.catalogue.count} cached terms · Snapshot {boot?.catalogue.sha.slice(0, 7)}</p>
           <p>Your sessions are stored locally in SQLite. Exports contain no account credentials.</p>
         </div>{/if}

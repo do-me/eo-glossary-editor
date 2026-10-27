@@ -1,5 +1,7 @@
 # GitHub App or OAuth app?
 
+Status: historical comparison. The maintainer chose personal access tokens as primary on 27 October 2026; see [Decision 003](003-personal-access-tokens.md). GitHub App deployment is optional future work.
+
 Decision, 26 October 2026: prefer a public **GitHub App using device authorization and user access tokens** for distribution. Retain OAuth-app and PAT compatibility for pilots.
 
 | Concern | GitHub App | OAuth app |

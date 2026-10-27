@@ -17,7 +17,7 @@ Deliver:
 - A fixture corpus drawn from the current glossary, with provenance and a fixed source commit.
 - A Milkdown/Svelte integration experiment against representative Markdown, including alternative definitions, empty headings, tables, Unicode, and frontmatter separation.
 - A report comparing untouched round trips, paragraph edits, metadata-only edits, and unsupported blocks. Do not accept broad reformatting of unrelated content.
-- A native GitHub device-flow experiment with a project client ID, cancellation, expiry, account verification, and secure credential persistence.
+- A personal-token sign-in experiment with account verification, token rejection/revocation, and secure credential persistence. Device flow is optional future work.
 - A sandbox-repository experiment creating a multi-file commit and PR through Git data APIs, including a fork owned by an account without upstream write access.
 
 Exit gate: the selected editor and GitHub path can support the core product without hosted services or source loss. If the editor fails, test the fallback before implementing the complete UI. Resolve the default sidecar decision using this evidence.
@@ -78,7 +78,7 @@ Deliver:
 - A focused trial with representative experts using their team filters and real terminology examples.
 - Keyboard, screen-reader, contrast, reduced-motion, and text-scaling checks.
 - Packaged smoke tests on macOS, Windows, and Linux webviews, with secure-storage behaviour checked per platform.
-- Installation instructions, release notes, license/notices, OAuth setup documentation, and local recovery/export documentation.
+- Installation instructions, release notes, license/notices, personal-token setup documentation, and local recovery/export documentation.
 - CI for Rust core tests, frontend checks, fixture integrity, UI flows, and platform builds.
 
 Exit gate: the end-to-end release scenario below succeeds on the supported platform matrix. Signing and public distribution are release tasks contingent on configured maintainer credentials; an unsigned local development build is not described as a finished signed release.
@@ -116,7 +116,7 @@ The PR diff contains only intended term changes. The contributor never needs to 
 | Concurrency | Independent PR-head edit; upstream change to the same term; deleted file; branch updated between preflight and reference update |
 | Submission snapshot | Continue typing while upload runs; only frozen revisions are marked submitted; newer edits remain local |
 | Public-session import | Fresh installation; authored PR ownership checks; merged/closed PR; non-term changes explicitly shown |
-| Privacy | Issued tokens never return to the frontend; optional PAT input is cleared after its dedicated IPC transfer; no credentials in logs, exports, or diagnostics; rendering cannot execute scripts |
+| Privacy | Issued tokens never return to the frontend; personal-token input is cleared after its dedicated IPC transfer; no credentials in logs, exports, or diagnostics; rendering cannot execute scripts |
 | Native runtime | Packaged WebKit/WebView2/Linux behaviour, credential store, native browser opening, app exit and resume |
 
 Use mocked GitHub transport and failure injection for deterministic core tests. Use a dedicated test repository and ordinary contributor account for controlled integration tests; do not exercise destructive scenarios against the glossary’s production repository.
@@ -142,7 +142,7 @@ Target macOS Apple Silicon/Intel, Windows x64, and Linux x64 initially. Validate
 
 Use a single package manager and check in its lockfile plus `Cargo.lock`. Pin desktop/security-sensitive dependencies deliberately. Review dependency and native-binary notices before distribution.
 
-A public release needs a repository location, chosen license, project OAuth app registration/client ID, and platform signing configuration. These are explicit setup items; the application itself does not require hosted infrastructure.
+A public release needs a repository location, chosen license, personal-token setup instructions, and clear platform signing status. A GitHub App registration/client ID is not required. These are explicit setup items; the application itself does not require hosted infrastructure.
 
 For the first trial, distribute a documented local development/release-candidate build. Automatic updates can follow a verified signing/update pipeline rather than being a prerequisite for testing the editing workflow.
 

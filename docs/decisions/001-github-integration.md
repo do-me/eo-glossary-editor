@@ -1,6 +1,6 @@
 # Decision 001 — direct GitHub integration or a `gh` sidecar
 
-Status: implemented direct client; authentication registration choice superseded by [Decision 002](002-github-app-authentication.md)
+Status: implemented direct client; authentication priority superseded by [Decision 003](003-personal-access-tokens.md); Decision 002 retains the historical app comparison
 Date: 26 October 2026
 
 ## Context

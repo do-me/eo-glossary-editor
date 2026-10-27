@@ -1945,3 +1945,20 @@ a {
     max-width: 170px;
   }
 }
+
+.token-form > label:not(.checkbox-label) {
+  margin-top: 18px;
+}
+.token-form .text-button {
+  padding-left: 0;
+}
+.token-form .small {
+  line-height: 1.6;
+}
+.token-error {
+  color: #a34838;
+  padding: 10px 12px;
+  border: 1px solid #efd9d1;
+  border-radius: 4px;
+  background: #fff6f2;
+}

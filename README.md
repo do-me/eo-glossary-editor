@@ -8,11 +8,64 @@ Search terms, filter by review team or discussion status, edit several terms in 
 <img width="1645" height="1095" alt="image" src="https://github.com/user-attachments/assets/ae7001f5-c7d4-45d3-b1af-5a16f302f830" />
 <img width="1645" height="1095" alt="image" src="https://github.com/user-attachments/assets/b2602942-5d34-4db5-b32d-066d4638195b" />
 
-## Install
+## Desktop app download
 
-Download the package for your computer from [Releases](https://github.com/do-me/eo-glossary-editor/releases/latest): macOS Apple Silicon or Intel (`.dmg`), Windows x64 (`.exe`/`.msi`), or Linux x64 (`.AppImage`/`.deb`/`.rpm`). Checksums and source notices are included. macOS packages are ad-hoc signed without notarization; Windows installers are unsigned. Interactive platform testing has been performed on macOS.
+Download [v0.1.1](https://github.com/do-me/eo-glossary-editor/releases/tag/v0.1.1) for your computer. macOS packages are ad-hoc signed without notarization; Windows installers are unsigned. Use the commands below only for the release downloaded from this repository that you trust. Commands assume the installer is in your Downloads folder.
 
-Start with **Settings → Use a personal access token**. A classic token needs `public_repo`. The default glossary target is `ceos-org/eo-glossary`; the editor source repository is `do-me/eo-glossary-editor`.
+- **macOS** — [Apple Silicon DMG](https://github.com/do-me/eo-glossary-editor/releases/download/v0.1.1/EO-Glossary-Editor_0.1.1_macos_aarch64.dmg) · [Intel DMG](https://github.com/do-me/eo-glossary-editor/releases/download/v0.1.1/EO-Glossary-Editor_0.1.1_macos_x64.dmg). Open the DMG and drag **EO Glossary Editor.app** into **Applications**. If macOS blocks opening it, remove this app's quarantine attribute once, then open it:
+
+  ```sh
+  xattr -dr com.apple.quarantine "/Applications/EO Glossary Editor.app"
+  open "/Applications/EO Glossary Editor.app"
+  ```
+
+  You can also use **System Settings → Privacy & Security → Open Anyway** after a failed launch attempt.
+
+- **Windows x64 (setup)** — [Download EXE](https://github.com/do-me/eo-glossary-editor/releases/download/v0.1.1/EO-Glossary-Editor_0.1.1_windows_x64-setup.exe). Double-click, or use PowerShell:
+
+  ```powershell
+  Unblock-File -LiteralPath "$HOME\Downloads\EO-Glossary-Editor_0.1.1_windows_x64-setup.exe"
+  Start-Process -FilePath "$HOME\Downloads\EO-Glossary-Editor_0.1.1_windows_x64-setup.exe" -Wait
+  ```
+
+- **Windows x64 (MSI)** — [Download MSI](https://github.com/do-me/eo-glossary-editor/releases/download/v0.1.1/EO-Glossary-Editor_0.1.1_windows_x64.msi). Double-click, or use PowerShell:
+
+  ```powershell
+  Unblock-File -LiteralPath "$HOME\Downloads\EO-Glossary-Editor_0.1.1_windows_x64.msi"
+  msiexec.exe /i "$HOME\Downloads\EO-Glossary-Editor_0.1.1_windows_x64.msi"
+  ```
+
+  Windows may still show SmartScreen: choose **More info → Run anyway** if offered and you trust the download. Unblock-File removes the file's download mark; it does not override Smart App Control or organizational policies.
+
+- **Linux x64 (AppImage)** — [Download AppImage](https://github.com/do-me/eo-glossary-editor/releases/download/v0.1.1/EO-Glossary-Editor_0.1.1_linux_amd64.AppImage). Make the downloaded file executable, then run it:
+
+  ```sh
+  cd "$HOME/Downloads"
+  chmod u+x ./EO-Glossary-Editor_0.1.1_linux_amd64.AppImage
+  ./EO-Glossary-Editor_0.1.1_linux_amd64.AppImage
+  ```
+
+  If the system has no FUSE runtime, try `./EO-Glossary-Editor_0.1.1_linux_amd64.AppImage --appimage-extract-and-run`.
+
+- **Linux x64 (Debian / Ubuntu)** — [Download DEB](https://github.com/do-me/eo-glossary-editor/releases/download/v0.1.1/EO-Glossary-Editor_0.1.1_linux_amd64.deb). Install with dependencies, then launch from your application menu or terminal:
+
+  ```sh
+  cd "$HOME/Downloads"
+  sudo apt install ./EO-Glossary-Editor_0.1.1_linux_amd64.deb
+  eo-glossary-editor
+  ```
+
+- **Linux x64 (Fedora / RHEL)** — [Download RPM](https://github.com/do-me/eo-glossary-editor/releases/download/v0.1.1/EO-Glossary-Editor_0.1.1_linux_x86_64.rpm). Install with dependencies, then launch from your application menu or terminal:
+
+  ```sh
+  cd "$HOME/Downloads"
+  sudo dnf install ./EO-Glossary-Editor_0.1.1_linux_x86_64.rpm
+  eo-glossary-editor
+  ```
+
+[SHA-256 checksums](https://github.com/do-me/eo-glossary-editor/releases/download/v0.1.1/SHA256SUMS.txt) are included with the release. Interactive platform testing has been performed on macOS; all installers are built in CI.
+
+Start with **Settings → Personal access token → Sign in with token**. See [token setup](docs/GITHUB-SETUP.md). The default glossary target is `ceos-org/eo-glossary`; the editor source is `do-me/eo-glossary-editor`.
 
 ## Run locally
 
@@ -30,7 +83,7 @@ npm run tauri build -- --bundles app
 open "target/release/bundle/macos/EO Glossary Editor.app"
 ```
 
-A macOS build produces `target/release/bundle/macos/EO Glossary Editor.app` (about 14 MB). This development build has been smoke-tested on macOS Apple Silicon. Windows/Linux packaging and signed distribution still need release validation.
+A macOS build produces `target/release/bundle/macos/EO Glossary Editor.app` (about 14 MB). Native macOS use and all platform installer builds are checked. Interactive Windows/Linux trials and certificate-signed distribution remain future validation.
 
 ## Editing
 
@@ -51,15 +104,15 @@ Keyboard shortcuts: `⌘/Ctrl K` search, `⌘/Ctrl S` flush saves, `⌘/Ctrl W` 
 
 ## GitHub authentication
 
-No hosted backend, authentication service, client secret, Git install, or CLI sidecar is required. Rust calls GitHub directly.
+**Personal access tokens are the primary sign-in method.** No app registration, hosted service, Git installation, or CLI sidecar is needed.
 
-**Authenticate with GitHub** uses device authorization. The recommended registration is a **public GitHub App** with Contents and Pull requests write permissions, selected repositories, and Device Flow enabled. It works on GitHub Free without a hosted service. Enter its public client ID under **Account and settings → Configure GitHub authentication**. Existing OAuth apps remain supported; choose the matching client type. See [registration steps](docs/GITHUB-SETUP.md) and [the comparison](docs/decisions/002-github-app-authentication.md).
+1. Open [GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token](https://github.com/settings/tokens/new).
+2. Give it a name and expiration, and select **public_repo** for the public-glossary workflow.
+3. In the editor's **Settings**, paste it into **Personal access token** and click **Sign in with token**.
 
-Release builders can set `EO_GITHUB_CLIENT_ID` and `EO_GITHUB_AUTH_KIND=github_app` at compile time. Device-issued expiring tokens refresh in Rust without a client secret. No registration/client ID has been configured in this development build.
+Remembered tokens stay in the system credential store. Uncheck Remember me to use the token for this launch only. The input clears immediately when submitted; session files and exports exclude credentials. Fine-grained token permissions and organization/SSO restrictions are covered in [token setup](docs/GITHUB-SETUP.md).
 
-A personal access token works immediately through the fallback form. A classic token needs `public_repo`. Fine-grained tokens need Contents and Pull requests write access to the participating repositories; GitHub limitations on cross-owner fork workflows may require a classic token for external contributors. Organization policies/SSO still apply.
-
-Remembered tokens are stored in the system credential store. Uncheck Remember me to authenticate for this launch only. Issued device tokens never cross into the frontend. Manually entered tokens are cleared from the input immediately after transfer to Rust. Sessions and exports contain no tokens.
+GitHub App / OAuth device authorization is an optional future direction, with existing experimental support retained under **Advanced: optional app sign-in**. It is not required for releases or normal use, and there is no commitment to roll it out. See [the authentication decision](docs/decisions/003-personal-access-tokens.md).
 
 ## Submission and recovery
 

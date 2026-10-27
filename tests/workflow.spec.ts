@@ -11,6 +11,36 @@ async function freshSession(page: Page, name: string) {
   await page.getByRole('button', { name: 'Create session', exact: true }).click();
   await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
 }
+test('personal token sign-in is primary, handles failure visibly, and retains optional app setup', async ({
+  page,
+}) => {
+  await freshSession(page, `Token sign-in ${Date.now()}`);
+  await page.getByRole('button', { name: 'Account and settings', exact: true }).click();
+  const form = page.getByRole('form', { name: 'Personal access token sign-in' });
+  await expect(form).toBeVisible();
+  await expect(form.getByRole('button', { name: 'Create a token on GitHub' })).toBeVisible();
+  const token = form.getByLabel('Personal access token', { exact: true });
+  await expect(token).toHaveAttribute('type', 'password');
+  await expect(page.getByLabel('Public client ID')).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Sign in with registered app' })).toHaveCount(0);
+  await token.fill('invalid-fixture-token');
+  await form.getByRole('button', { name: 'Sign in with token', exact: true }).click();
+  await expect(form.getByRole('alert')).toContainText('The token was not accepted');
+  await expect(token).toHaveValue('');
+  await token.fill('fixture-token-do-not-use');
+  await form.getByRole('button', { name: 'Sign in with token', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Account and settings', exact: true }).click();
+  await expect(page.getByText('@fixture-expert', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(form).toBeVisible();
+  await expect(token).toHaveValue('');
+  await page.screenshot({ path: '.cache/token-sign-in.png', fullPage: true });
+  await page.getByText('Advanced: optional app sign-in', { exact: true }).click();
+  await expect(page.getByLabel('Public client ID')).toBeVisible();
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+});
+
 test('expert workflow: skeleton, protected structure, real SQLite autosave, tabs and session recovery', async ({
   page,
 }) => {

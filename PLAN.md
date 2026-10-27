@@ -26,7 +26,7 @@ This plan implements the requirements in [glossary issue #13](https://github.com
 | Editing | WYSIWYG, multiple term tabs, autosave | Confirmed |
 | Main entry points | Search, sessions, term editing | Confirmed |
 | Hosting | No deployed backend or authentication service | Confirmed |
-| GitHub sign-in | Native device flow; public GitHub App, OAuth compatible | Implemented; registration pending |
+| GitHub sign-in | Personal access token; app device flow optional | Confirmed primary route |
 | GitHub integration | Direct Rust API client; no mandatory CLI sidecar | Recommended default; see decision record |
 | Rich-text library | Milkdown, mounted through a small Svelte adapter | Implemented; section-preservation corpus checks pass |
 | Local persistence | SQLite managed by Rust, with portable session export | Recommended default |
@@ -61,8 +61,8 @@ The first release helps authors prepare contributions. Reading PR feedback and o
 ### A. First use
 
 1. Launch the application.
-2. See the CEOS glossary repository and the “Authenticate with GitHub” action.
-3. Complete GitHub authorization in the external browser.
+2. See the CEOS glossary repository and the personal-token sign-in action.
+3. Create a GitHub personal access token if needed and paste it into Settings.
 4. Download a consistent glossary snapshot with visible progress and retry.
 5. Arrive at searchable terms with an optional team filter.
 
@@ -112,9 +112,9 @@ Priority P0 means release-blocking; P1 means important within the first usable r
 
 | ID | Priority | Requirement | Acceptance outcome |
 |---|---|---|---|
-| AUTH-01 | P0 | “Authenticate with GitHub” works without hosted infrastructure | A clean machine can authorize through the browser; no secret is embedded |
-| AUTH-02 | P0 | Issued tokens stay in native credential storage | No issued token is returned to the frontend, written to logs, or included in exports |
-| AUTH-03 | P1 | Token fallback and sign-out | A user can supply a supported PAT; sign-out preserves local drafts |
+| AUTH-01 | P0 | Personal-token sign-in works without hosted infrastructure | A clean machine can submit with its own token; no shared secret is embedded |
+| AUTH-02 | P0 | Remembered tokens stay in native credential storage | Token input clears after transfer; credentials never enter logs or exports |
+| AUTH-03 | P1 | Token sign-in and sign-out | A user can supply a supported PAT; sign-out preserves local drafts |
 | SEARCH-01 | P0 | Search term titles, synonyms, and definition text | Relevant terms open directly from results |
 | SEARCH-02 | P0 | Filter by team, class, discussion status | Existing YAML tags work without data migration |
 | SEARCH-03 | P1 | Changed-terms filter and keyboard quick search | An expert can return to the session’s work immediately |
@@ -208,7 +208,7 @@ The release gate is a non-technical expert completing a multi-term session over 
 
 ## 11. Dependencies to resolve during implementation
 
-- Register a project-owned GitHub OAuth app and enable device flow; ship its public client ID. There is no client secret to host or embed.
+- Use personal access tokens as the primary route. GitHub App/OAuth deployment may be explored later, but no registration or client ID is required for release.
 - Verify organization OAuth/SSO policies and public-fork behaviour with an ordinary contributor account, not only a maintainer account.
 - Confirm the rich editor against the actual Markdown corpus before designing around its internal model.
 - Select a native credential-storage library after testing all supported OS backends; secure-storage failure must not silently fall back to plaintext.

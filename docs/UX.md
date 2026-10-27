@@ -17,7 +17,7 @@ The main conceptual objects are Term, Session, Local changes, and Submission. Br
 | Sessions | Create, resume, export, and inspect contributions | Resume / New session |
 | Term editor | Work on content across tabs | Edit; saves automatically |
 | Review changes | Inspect the full session and send it | Submit for review / Update submission |
-| Settings | Account, appearance, local data, diagnostics | Authenticate with GitHub |
+| Settings | Account, appearance, local data, diagnostics | Sign in with a token |
 
 Keep Terms and Sessions available in a narrow left rail. Settings and the account state sit at its bottom. The rail uses an icon and a visible text label or an equally accessible expanded form; navigation must not depend on guessing icons.
 
@@ -63,11 +63,11 @@ The first screen presents the repository identity, one large search input, a sho
 Before the first download, show:
 
 - “EO Glossary · ceos-org/eo-glossary.”
-- “Authenticate with GitHub.”
+- “Sign in with a token.”
 - “Browse public terms” where public downloading is available.
 - A concise explanation: drafts stay on this computer until the contributor submits them.
 
-The authentication sheet displays a copyable code, “Open GitHub,” and an authorization progress state. It must remain usable when the browser does not open automatically. Cancellation and code expiry return to a clear retry state. On success, show the actual GitHub account before using it for submissions.
+Settings displays the personal-token password field and token-creation link immediately. Show rejection errors beside the form, clear the input after each attempt, and expose Remember me for the OS credential store. On success, show the actual GitHub account. Existing app/device authorization remains collapsed under Advanced: optional app sign-in as a possible future experiment, without being an onboarding requirement.
 
 After sign-out, show locally saved sessions and cached terms as before. Disable submission until the correct account reconnects.
 

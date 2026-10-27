@@ -22,7 +22,7 @@ Tauri native window
 
 Bundle a static Vite application into Tauri 2. Use ordinary Svelte components and a small feature-level state layer. A server-rendered SvelteKit deployment is unnecessary for this desktop application. Do not add an internal HTTP API when Tauri IPC already covers the frontend/backend boundary.
 
-Rust is the authority for source snapshots, local drafts, identity, validation, filesystem operations, and GitHub mutations. Device-flow tokens are never returned to the frontend. The UI cannot execute arbitrary shell commands or write arbitrary filesystem paths. An optional manually entered PAT has the explicit transient-input exception described in the authentication section.
+Rust is the authority for source snapshots, local drafts, identity, validation, filesystem operations, and GitHub mutations. Device-flow tokens are never returned to the frontend. The UI cannot execute arbitrary shell commands or write arbitrary filesystem paths. A manually entered personal token has the explicit transient-input exception described in the authentication section.
 
 Initial dependencies: `serde`, `tokio`, `reqwest`, `rusqlite` with an embedded SQLite build, a maintained native credential-store adapter, Markdown parsing/diff libraries, and Tauri’s narrowly scoped native integration. Select exact packages and compatible locked versions during the first implementation milestone. Avoid adding several competing HTTP, state, or database frameworks.
 
@@ -161,13 +161,11 @@ Validation distinguishes pre-existing diagnostics from newly introduced damage. 
 
 ## 7. GitHub authentication
 
-Use a project-owned OAuth app with device flow enabled. Ship only its public client ID. Rust requests a device code, emits the user-facing code and verification URL to the UI, polls GitHub at the required interval, and verifies the resulting account before storing credentials.
+Personal access tokens are primary. Settings shows the token field, GitHub token-creation link, public_repo guidance, and a Remember me option. Rust verifies the account before storing a remembered token in the OS credential store. The token field clears immediately on submit, and failures are shown in the form. Temporary tokens stay in memory for the launch. Tokens never enter durable workspace/session exports or diagnostics.
 
-Handle pending authorization, cancellation, expiry, access denial, slower polling requests, transport failures, and organizational restrictions explicitly. The user can copy the code and open GitHub manually if automatic browser opening fails.
+Fine-grained tokens are accepted where their repository/owner access supports the workflow; the public-glossary contributor fork path may need a classic public_repo token. Organization and SSO policies still apply. A manually entered token exists briefly in the password field and one dedicated IPC request to Rust; it is never returned by Rust.
 
-For the public-glossary scope, request only permissions required to read content, write the user’s eligible head repository, and open/update PRs. Validate the `public_repo` OAuth route in the authentication experiment; do not silently broaden to private repositories. A supported PAT can be an advanced fallback, with permission errors explained in context. Fine-grained tokens and fork access need their own compatibility checks.
-
-If the fallback uses an in-app password field, the manually entered PAT necessarily exists briefly in that input and in one dedicated IPC request to Rust. Clear it immediately after transfer, keep it out of shared/reactive workspace state and diagnostics, and never return it from Rust. This exception does not apply to tokens issued by the normal device-flow sign-in.
+GitHub App/OAuth device authorization remains under a collapsed optional setup section for possible future work. It is not required for normal onboarding or release. Existing device polling, cancellation, secure credential storage, and expiring device-token refresh remain available for a configured registration. See Decision 003.
 
 Tokens and any refresh tokens remain behind a `CredentialStore` interface using the OS credential vault. Do not fall back to plaintext automatically. If secure storage is unavailable, offer an explicit session-only sign-in and explain that the user will sign in again after restart.
 
