@@ -372,3 +372,72 @@ test('startup combines another merged PR with a non-overlapping local draft', as
     0,
   );
 });
+
+async function fixtureCommand(page: Page, name: string, data = {}) {
+  const response = await page.request.post('http://127.0.0.1:1421', {
+    headers: { Origin: 'http://127.0.0.1:1420', 'X-Test-Token': 'local-e2e-only' },
+    data: { name, data },
+  });
+  expect(response.ok()).toBe(true);
+  return response.json();
+}
+
+test('submitted contribution has one durable summary, full review, and separate unsent edits', async ({
+  page,
+}) => {
+  await freshSession(page, `Submitted review ${Date.now()}`);
+  await openAccuracy(page);
+  const definition = page
+    .getByRole('region', { name: '1 Definition', exact: true })
+    .locator('[contenteditable=true]');
+  await definition.fill('A submitted scientific definition.');
+  await expect(page.getByText('Saved locally', { exact: true })).toBeVisible();
+  await acknowledgeWorkspace(page);
+  await fixtureCommand(page, 'fixture_sign_in');
+  await page.reload();
+  await page.getByRole('button', { name: 'Review changes' }).click();
+  await page.getByRole('button', { name: 'Submit for review', exact: true }).click();
+  const summary = page.getByRole('region', { name: 'Pull request status' });
+  await expect(summary.getByRole('heading')).toHaveText('Contribution submitted');
+  await expect(summary).toBeInViewport();
+  await expect(summary).toContainText('1 term submitted to GitHub');
+  await expect(summary.getByRole('button', { name: 'View PR #9001' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Full contribution 1', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.change-card')).toContainText('A submitted scientific definition.');
+  await expect(page.getByRole('heading', { name: 'Everything is saved' })).toHaveCount(0);
+  await expect(page.locator('.submission-form')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Export', exact: true })).toBeVisible();
+  await acknowledgeWorkspace(page);
+  await page.reload();
+  await expect(summary.getByRole('heading')).toHaveText('Contribution submitted');
+  await expect(summary).toBeInViewport();
+  await expect(page.locator('.change-card')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Not submitted 0', exact: true }).click();
+  await expect(page.locator('.change-card')).toHaveCount(0);
+  await expect(page.getByRole('status').filter({ hasText: 'No edits waiting' })).toBeVisible();
+  await summary.getByRole('button', { name: 'Continue editing' }).click();
+  await definition.fill('A newer local definition, not submitted yet.');
+  await expect(page.getByText('Saved locally', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Review changes' }).click();
+  await expect(summary.getByRole('heading')).toHaveText('New edits to send');
+  await expect(page.getByRole('button', { name: 'Not submitted 1', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.getByRole('button', { name: 'Update submission', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Update submission', exact: true }).click();
+  await expect(summary.getByRole('heading')).toHaveText('Contribution submitted');
+  await expect(summary).toBeInViewport();
+  await expect(page.locator('.submission-form')).toHaveCount(0);
+  await page.screenshot({ path: '.cache/submission-complete.png', fullPage: true });
+
+  // A merged contribution remains reviewable, while further work moves to a follow-up.
+  const boot = await fixtureCommand(page, 'bootstrap');
+  await fixtureCommand(page, 'fixture_pr_state', { session: boot.activeSession, state: 'merged' });
+  await page.reload();
+  await expect(summary.getByRole('heading')).toHaveText('Contribution merged');
+  await expect(summary.getByRole('button', { name: 'Start follow-up' })).toBeVisible();
+  await expect(page.locator('.submission-form')).toHaveCount(0);
+});

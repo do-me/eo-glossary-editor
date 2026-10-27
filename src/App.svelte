@@ -29,6 +29,7 @@
   import ZoomControl from './components/ZoomControl.svelte';
   import { zoomShortcut } from './lib/zoom';
   import RenderedChange from './components/RenderedChange.svelte';
+  import SubmissionSummary from './components/SubmissionSummary.svelte';
   import TermEditor from './components/TermEditor.svelte';
   import { api, message, native, openLink } from './lib/api';
   import { SaveQueue } from './lib/save-queue';
@@ -88,7 +89,6 @@
   let repositoryUrl = $state('');
   let contributionTitle = $state('');
   let contributionBody = $state('');
-  let submitResult = $state('');
   let pat = $state('');
   let clientId = $state('');
   let authKind = $state<'github_app' | 'oauth_app'>('github_app');
@@ -119,6 +119,9 @@
   const results = $derived(findTerms(terms, workspace));
   const pending = $derived(terms.filter((t) => t.pending).length);
   const changed = $derived(terms.filter((t) => t.changed).length);
+  const submitted = $derived(
+    Object.values(session?.terms ?? {}).filter((t) => t.submitted !== null).length,
+  );
   const activeFilters = $derived(
     workspace.teams.length +
       workspace.classes.length +
@@ -238,7 +241,10 @@
       reviewMode = ['changes', 'preview', 'compare'].includes(workspace.reviewMode ?? '')
         ? workspace.reviewMode!
         : 'changes';
-      allChanges = workspace.allChanges ?? false;
+      const hasPending = Object.values(next.terms).some(
+        (t) => t.source !== (t.submitted ?? t.starting),
+      );
+      allChanges = next.submission && !hasPending ? true : (workspace.allChanges ?? false);
       contributionTitle = workspace.contributionTitle ?? '';
       contributionBody = workspace.contributionBody ?? '';
       title = workspace.newTermTitle ?? '';
@@ -625,9 +631,10 @@
       else await closeTab(path);
     });
   }
-  async function review() {
+  async function review(scope?: boolean) {
     await perform('Preparing review', async () => {
       await flush();
+      allChanges = scope ?? Boolean(session?.submission && pending === 0);
       changes = await api<Change[]>('changes', { session: session!.id, all: allChanges });
       contributionTitle ||= session!.name;
       view = 'review';
@@ -641,17 +648,28 @@
         return;
       }
       await flush();
-      const link = await api<{ url: string }>('submit', {
+      await api<{ url: string }>('submit', {
         session: session!.id,
         title: contributionTitle,
         body: contributionBody,
       });
-      submitResult = link.url;
+      allChanges = true;
       await flush();
       const id = session!.id;
       await loadSession(id);
+      allChanges = pending === 0;
       changes = await api<Change[]>('changes', { session: id, all: allChanges });
       view = 'review';
+      workspace.viewScroll ??= {};
+      workspace.viewScroll.review = 0;
+      await tick();
+      if (pageArea) {
+        pageArea.scrollTop = 0;
+        pageArea
+          .querySelector<HTMLElement>('#contribution-status-heading')
+          ?.focus({ preventScroll: true });
+      }
+      await saveWorkspace();
     });
   }
   async function changeRepository() {
@@ -667,7 +685,6 @@
       changes = [];
       contributionTitle = '';
       contributionBody = '';
-      submitResult = '';
       await loadSession(result.session.id);
       modal = null;
       notice = `Now using ${result.session.repository}. Your other sessions are preserved with their original repositories.`;
@@ -897,7 +914,7 @@
               size={10}
             /> Saving…{:else}<AlertCircle size={13} /> Not saved
             <button onclick={() => void flush().catch(fail)}>Retry</button>{/if}</span
-        ><button class="primary" onclick={review} disabled={loading || !!busy}
+        ><button class="primary" onclick={() => void review()} disabled={loading || !!busy}
           ><CloudUpload size={14} /> Review changes <span class="count">{pending}</span></button
         >
       </div>
@@ -1013,27 +1030,42 @@
             <p class="eyebrow">SESSION REVIEW</p>
             <h1>{session?.name}</h1>
             <p class="muted">
-              {changes.length}
-              {changes.length === 1 ? 'term' : 'terms'} in this review. Destination: {session?.repository}.
+              Destination: {session?.repository}.
             </p>
           </div>
           <button onclick={exportSession}><Download size={14} /> Export</button>
         </div>
-        {#if currentReadonly || session?.operation}<div class="notice banner">
+        {#if session?.submission}<SubmissionSummary
+            submission={session.submission}
+            {pending}
+            {submitted}
+            busy={!!busy}
+            onopen={() => void openLink(session!.submission!.url).catch(fail)}
+            oncontinue={() => (view = 'terms')}
+            onfollowup={() => void followUp()}
+          />{/if}
+        {#if session?.operation}<div class="notice banner">
             <span
-              >{session?.operation
-                ? 'An interrupted submission is retained for recovery. Retry it, or move pending work to a follow-up session.'
-                : 'This contribution has closed. Continue pending work in a fresh session.'}</span
-            ><button onclick={followUp} disabled={!!busy}>Start follow-up</button>
-          </div>{/if}
-        {#if session?.submission}<div class="review-options">
-            <label
-              ><input type="checkbox" bind:checked={allChanges} onchange={review} /> Show all changes
-              since the session started</label
-            ><button onclick={() => void openLink(session!.submission!.url).catch(fail)}
-              >Open PR #{session.submission.number}<ArrowUpRight size={13} /></button
+              >An interrupted submission is retained for recovery. Retry it, or move pending work to
+              a follow-up session.</span
             >
+            <button onclick={followUp} disabled={!!busy}>Start follow-up</button>
           </div>{/if}
+        {#if session?.submission}<div
+            class="review-scope"
+            role="group"
+            aria-label="Changes to review"
+          >
+            <button aria-pressed={allChanges} onclick={() => void review(true)}
+              >Full contribution <span class="count">{changed}</span></button
+            >
+            <button aria-pressed={!allChanges} onclick={() => void review(false)}
+              >Not submitted <span class="count">{pending}</span></button
+            >
+          </div>{:else if changes.length}<p class="review-count muted small">
+            {changes.length}
+            {changes.length === 1 ? 'term' : 'terms'} to submit
+          </p>{/if}
         {#if changes.length}<div class="review-toolbar">
             <div class="review-mode" role="group" aria-label="Review display">
               {#each [{ id: 'changes', label: 'Changes' }, { id: 'preview', label: 'Preview' }, { id: 'compare', label: 'Side by side' }] as choice (choice.id)}<button
@@ -1067,16 +1099,19 @@
                 {#each change.warnings as warning, i (i)}<li>{warning}</li>{/each}
               </ul>{/if}
           </details>{/each}
-        {#if !changes.length}<div class="review-empty">
-            <Check size={24} />
-            <h2>Everything is saved</h2>
-            <p class="muted">
-              {session?.submission
-                ? 'No new local changes to submit.'
-                : 'Edit a term to start your contribution.'}
+        {#if !changes.length}
+          {#if session?.submission}<p class="review-scope-empty muted" role="status">
+              {allChanges
+                ? 'No differences from the current glossary. The submitted review is available on GitHub.'
+                : 'No edits waiting to be sent. All saved edits are included in the pull request.'}
             </p>
-          </div>{/if}
-        {#if pending || session?.operation}<section class="submission-form">
+          {:else}<div class="review-empty">
+              <Check size={24} />
+              <h2>Everything is saved</h2>
+              <p class="muted">Edit a term to start your contribution.</p>
+            </div>{/if}
+        {/if}
+        {#if !currentReadonly && (pending || session?.operation)}<section class="submission-form">
             <h2>{session?.submission ? 'Update your contribution' : 'Submit for review'}</h2>
             <p class="muted">
               {session?.submission
@@ -1105,12 +1140,6 @@
                 >
               </div>{/if}
           </section>{/if}
-        {#if submitResult}<div class="success-message">
-            <Check size={16} /> Contribution submitted.<button
-              onclick={() => void openLink(submitResult).catch(fail)}
-              >View on GitHub<ArrowUpRight size={13} /></button
-            >
-          </div>{/if}
       </main>
     {:else}
       <div class="editing-layout">
@@ -1580,7 +1609,7 @@
           >
         </details>
         <div class="settings-note">
-          <p><strong>EO Glossary Editor</strong> · 0.1.0 · Local development build</p>
+          <p><strong>EO Glossary Editor</strong> · 0.1.0 · Desktop application</p>
           <p>{boot?.catalogue.count} cached terms · Snapshot {boot?.catalogue.sha.slice(0, 7)}</p>
           <p>Your sessions are stored locally in SQLite. Exports contain no account credentials.</p>
         </div>{/if}

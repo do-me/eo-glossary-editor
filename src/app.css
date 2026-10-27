@@ -1124,20 +1124,69 @@ a {
   color: #7e8a72;
   margin-bottom: 24px;
 }
-.review-options {
+.submission-summary {
   display: flex;
-  justify-content: space-between;
+  gap: 18px;
+  padding: 24px;
+  margin-bottom: 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f6f9f3;
+}
+.submission-summary-icon {
+  color: var(--accent);
+  padding-top: 3px;
+}
+.submission-summary-content {
+  min-width: 0;
+}
+.submission-summary-heading {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 12px;
+}
+.submission-summary-heading h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.submission-summary-content p {
+  margin: 10px 0 8px;
+  font-size: 13px;
+  max-width: 65ch;
+}
+.submission-summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.review-scope {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
   margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
 }
-.review-options label {
-  font-size: 11px;
-  flex-direction: row;
-  align-items: center;
-  color: #859277;
+.review-scope button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  padding: 12px 14px;
+  gap: 8px;
+  color: var(--muted);
 }
-.review-options button {
-  font-size: 11px;
+.review-scope button[aria-pressed='true'] {
+  border-bottom-color: var(--accent);
+  color: #292f2d;
+}
+.review-scope-empty {
+  padding: 18px 0;
+  font-size: 13px;
+}
+.review-count {
+  margin: 0 0 18px;
 }
 .change-card {
   border: 1px solid var(--line);
@@ -1218,19 +1267,6 @@ a {
 .review-empty h2 {
   margin-top: 18px;
   font-size: 19px;
-}
-.success-message {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 20px;
-  background: #f0f7e9;
-  color: #628449;
-  font-size: 12px;
-}
-.success-message button {
-  margin-left: auto;
-  font-size: 11px;
 }
 .modal-backdrop {
   position: fixed;

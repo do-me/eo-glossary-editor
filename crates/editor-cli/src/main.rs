@@ -111,6 +111,7 @@ fn main() {
 fn serve(mut store: Store, port: u16, token: &str) -> editor_core::Result<()> {
     let server = tiny_http::Server::http(("127.0.0.1", port))
         .map_err(|_| editor_core::Error::new("server", "Cannot bind test server"))?;
+    let mut fixture_signed_in = false;
     for mut req in server.incoming_requests() {
         let origin = req
             .headers()
@@ -146,7 +147,68 @@ fn serve(mut store: Store, port: u16, token: &str) -> editor_core::Result<()> {
                 let v: serde_json::Value = serde_json::from_str(&text)?;
                 let name = v["name"].as_str().unwrap_or("");
                 if name == "account" {
-                    return Ok(serde_json::json!({"account":null,"clientIdConfigured":false}));
+                    let account = fixture_signed_in.then(|| serde_json::json!({"id":123,"login":"fixture-expert","name":"Fixture expert"}));
+                    return Ok(serde_json::json!({"account":account,"clientIdConfigured":false}));
+                }
+                if name == "fixture_sign_in" {
+                    fixture_signed_in = true;
+                    return Ok(serde_json::Value::Null);
+                }
+                if name == "submit" && fixture_signed_in {
+                    // Exercise the real durable submission acknowledgement without GitHub writes.
+                    use editor_core::model::*;
+                    let id = v["data"]["session"].as_str().unwrap_or("");
+                    let session = store.session(id)?;
+                    editor_core::store::ensure_editable(&session)?;
+                    let files = editor_core::store::pending_files(&session);
+                    if files.is_empty() {
+                        return Err(editor_core::Error::new(
+                            "empty",
+                            "No pending fixture edits.",
+                        ));
+                    }
+                    let operation = Operation {
+                        repository: session.repository.clone(),
+                        base_branch: session.base_branch.clone(),
+                        id: format!("fixture-{}", now()),
+                        title: session.name.clone(),
+                        body: String::new(),
+                        original_files: files.clone(),
+                        files,
+                        head_repo: session.repository.clone(),
+                        head_branch: format!("eo-editor/{}", session.id),
+                        parent: session.base_sha.clone(),
+                        commit: Some("fixture-commit".into()),
+                        account_id: 123,
+                    };
+                    let link = Submission {
+                        number: 9001,
+                        url: format!("https://github.com/{}/pull/9001", session.repository),
+                        head_repo: operation.head_repo.clone(),
+                        head_branch: operation.head_branch.clone(),
+                        head_sha: "fixture-commit".into(),
+                        account_id: 123,
+                        state: "open".into(),
+                    };
+                    editor_core::github::record_operation(&mut store, id, &operation)?;
+                    store.finish_submission(id, &operation, link.clone())?;
+                    return Ok(serde_json::to_value(link)?);
+                }
+                if name == "fixture_pr_state" {
+                    let id = v["data"]["session"].as_str().unwrap_or("");
+                    let state = v["data"]["state"].as_str().unwrap_or("");
+                    if !matches!(state, "open" | "closed" | "merged") {
+                        return Err(editor_core::Error::new("fixture", "Invalid PR state."));
+                    }
+                    store.mutate(id, |s| {
+                        let link = s
+                            .submission
+                            .as_mut()
+                            .ok_or_else(|| editor_core::Error::new("fixture", "Missing PR."))?;
+                        link.state = state.into();
+                        Ok(())
+                    })?;
+                    return Ok(serde_json::Value::Null);
                 }
                 if name == "check_updates" {
                     let id = v["data"]["session"].as_str().unwrap_or("");

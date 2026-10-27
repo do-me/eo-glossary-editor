@@ -33,7 +33,7 @@ Built an optimized unsigned macOS Apple Silicon `.app` (13.99 MiB), launched it,
 
 ## Final local results
 
-27 Rust integration tests passed (plus one intentionally ignored subprocess fixture), 8 TypeScript tests passed, and 8 browser workflow tests passed. The restart/zoom workflow also passed with an explicit reading-position assertion after reload. The corpus check exercises every one of the 509 term sources. Svelte checking reports zero errors/warnings; ESLint, Prettier, rustfmt, Clippy with warnings denied, and npm audit pass (zero reported dependency vulnerabilities). The optimized native build and native quit/restart smoke test pass. Browsing a term after the final restart retains the exact acknowledged source revision and produces no additional saved edit.
+27 Rust integration tests passed (plus one intentionally ignored subprocess fixture), 8 TypeScript tests passed, and 9 browser workflow tests passed. The restart/zoom workflow also passed with an explicit reading-position assertion after reload. The corpus check exercises every one of the 509 term sources. Svelte checking reports zero errors/warnings; ESLint, Prettier, rustfmt, Clippy with warnings denied, and npm audit pass (zero reported dependency vulnerabilities). The optimized native build and native quit/restart smoke test pass. Browsing a term after the final restart retains the exact acknowledged source revision and produces no additional saved edit.
 
 
 ## Repository settings and rendered review update
@@ -59,3 +59,12 @@ CEOS is now the locally selected default repository. The test fork remains avail
 ## Source publication
 
 The editor source is published as `do-me/eo-glossary-editor`. Authentication registration belongs to the personal `do-me` account, with that source repository as the homepage. The default glossary data repository remains CEOS; the sandbox data repository remains `do-me/eo-glossary`. No GitHub App registration, installation, or live editor-authenticated term commit/PR has been performed as part of publishing the source.
+
+
+## First release and submitted-PR review, 27 October 2026
+
+The maintainer reports successful personal-token authentication, commits, and PR creation in the glossary test fork. This is a user-reported live result; device authorization remains untested.
+
+The submitted review now has one persistent PR summary, a full-contribution view by default when nothing remains to send, a separate Not submitted scope, submitted/pending counts, one primary PR link, and a Continue editing action. Merged/closed sessions offer follow-up and cannot display an active submission form. Export, all rendered comparison modes, source diffs, interrupted-operation recovery, and same-PR updates remain available. Success scrolls/focuses the summary. A real-core browser workflow exercises submission acknowledgement, restart, scope changes, later edits, same-PR updates, and merged follow-up. All nine browser workflows pass. The native release was checked with the maintainer's existing PR #1: two submitted terms render in the full-contribution view, no pending edits or duplicate success messages appear, and the existing account/session remain intact.
+
+The release workflow gates publication on quality checks and packaging for macOS Apple Silicon/Intel, Windows x64, and Linux x64. It keeps a draft until every build succeeds and all seven required installer formats are present, then attaches SHA-256 checksums and source notices before publication. macOS is ad-hoc signed without notarization; Windows is unsigned. Windows/Linux builds are verified in CI; interactive use on those operating systems still needs user trials.

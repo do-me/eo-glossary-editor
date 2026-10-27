@@ -1,5 +1,13 @@
 name: Check
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+    inputs:
+      skip_desktop:
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -24,6 +32,7 @@ jobs:
       - run: npm run test:e2e
       - run: npm run build && npm audit --audit-level=moderate
   desktop:
+    if: inputs.skip_desktop != true
     strategy:
       fail-fast: false
       matrix:

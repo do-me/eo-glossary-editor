@@ -8,6 +8,12 @@ Search terms, filter by review team or discussion status, edit several terms in 
 <img width="1645" height="1095" alt="image" src="https://github.com/user-attachments/assets/ae7001f5-c7d4-45d3-b1af-5a16f302f830" />
 <img width="1645" height="1095" alt="image" src="https://github.com/user-attachments/assets/b2602942-5d34-4db5-b32d-066d4638195b" />
 
+## Install
+
+Download the package for your computer from [Releases](https://github.com/do-me/eo-glossary-editor/releases/latest): macOS Apple Silicon or Intel (`.dmg`), Windows x64 (`.exe`/`.msi`), or Linux x64 (`.AppImage`/`.deb`/`.rpm`). Checksums and source notices are included. macOS packages are ad-hoc signed without notarization; Windows installers are unsigned. Interactive platform testing has been performed on macOS.
+
+Start with **Settings → Use a personal access token**. A classic token needs `public_repo`. The default glossary target is `ceos-org/eo-glossary`; the editor source repository is `do-me/eo-glossary-editor`.
+
 ## Run locally
 
 Prerequisites for **development**: Node 24 LTS, npm, stable Rust, and the [Tauri platform prerequisites](https://v2.tauri.app/start/prerequisites/). End users of a packaged app do not need these tools, Git, or GitHub CLI.
@@ -36,6 +42,7 @@ A macOS build produces `target/release/bundle/macos/EO Glossary Editor.app` (abo
 - **Source:** unsupported HTML, math, and reference syntax uses section-level Markdown editing. The complete source is also available read-only. Untouched sections and unedited frontmatter remain byte-for-byte intact; a rich-edited section uses Milkdown’s Markdown formatting.
 - **Sessions:** create or rename sessions, switch between independent drafts, export/import portable JSON, and resume an open PR authored by your GitHub account.
 - **Repository settings:** choose a GitHub repository URL under Account and settings. Switching downloads its default branch and opens a fresh session; existing sessions keep their original repository. The session header and review screen show the destination. Snapshots and PR identities are scoped by repository, so a fork sharing a commit SHA or PR number remains separate.
+- **After submission:** one durable PR summary shows the PR state and submitted term count. Full contribution and Not submitted separate the complete proposal from newer local edits. Successful submission brings the summary into view. Merged/closed contributions remain reviewable and offer a follow-up session.
 - **Review:** read rendered terms with word-level addition/removal highlights. Switch between Changes, a clean Preview, and Side by side. The source diff remains collapsed and available for precise inspection. Review-team, class, and empty-section notes guide authors without automatically changing scientific status.
 
 **Zoom and recovery:** the bottom zoom control and `⌘/Ctrl +`, `⌘/Ctrl −`, and `⌘/Ctrl 0` support 75–200% zoom, saved locally. Normal quit/reopen restores native window size/position/fullscreen, active session, tabs, search/filters, page, document panels, scroll positions, and contribution text. Rich-editor caret and undo history are transient. Selecting a session deliberately returns to its editing page.
@@ -62,7 +69,7 @@ Updates check author identity, PR state, and the current remote head. Non-overla
 
 An imported PR must be open, authored by the signed-in account, and contain only added/modified term files. Rename/delete or unrelated file changes are reported explicitly.
 
-The real production submission and OAuth consent flows have **not** been exercised from this development run. Deterministic HTTP tests cover the fork path, multi-file commit, same-PR updates, response-loss recovery, and remote-change refusal. A live trial belongs in a dedicated sandbox repository before distribution.
+The maintainer has successfully tested personal-token authentication, commits, and a PR in the sandbox glossary. Device authorization and expiring-token refresh still need live validation. Deterministic HTTP tests cover the fork path, multi-file commit, same-PR updates, response-loss recovery, and remote-change refusal. Keep further integration trials in a dedicated sandbox repository.
 
 ## Local data and agent interface
 
@@ -104,4 +111,4 @@ Browser workflow tests run the real Rust commands against an isolated SQLite dat
 
 [Validation and limits](docs/VALIDATION.md) records what has actually been tested. [Plan](PLAN.md), [UX](docs/UX.md), [architecture](docs/ARCHITECTURE.md), and [GitHub integration decision](docs/decisions/001-github-integration.md) document the product intent and implementation.
 
-Source: [do-me/eo-glossary-editor](https://github.com/do-me/eo-glossary-editor). No binary release or live test PR has been published. Authored application code is MIT licensed; see [LICENSE](LICENSE). Bundled glossary source retains its upstream provenance; see [NOTICE](NOTICE.md) before redistributing it.
+Source: [do-me/eo-glossary-editor](https://github.com/do-me/eo-glossary-editor). Desktop packages are published through the release workflow; the production glossary is not used for automated test PRs. Authored application code is MIT licensed; see [LICENSE](LICENSE). Bundled glossary source retains its upstream provenance; see [NOTICE](NOTICE.md) before redistributing it.

@@ -25,9 +25,11 @@ Sign into GitHub as **do-me**, then open [New GitHub App](https://github.com/set
 
 Click **Create GitHub App**. This registration is free and needs no hosted service, callback server, app private key, or client secret for the implemented device flow. See [GitHub registration instructions](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app).
 
-## 2. Install on the glossary test fork
+## 2. Install on the production glossary
 
-On the new app's settings page, choose **Install App → Install** beside **do-me → Only select repositories → eo-glossary → Install**. The permission grant is to the glossary data repository, not the editor source repository. Later, install on `ceos-org/eo-glossary` for production contributions, subject to CEOS approval/policy. Contributors using other personal forks may also need an installation on those forks. See [GitHub installation instructions](https://docs.github.com/en/apps/using-github-apps/installing-your-own-github-app).
+On the new app's settings page, choose **Install App → Install** beside **ceos-org → Only select repositories → eo-glossary → Install**. The permission grant is to `ceos-org/eo-glossary`. The editor source repository is only the homepage. If GitHub requires organization approval, a CEOS owner must approve the installation. See [GitHub installation instructions](https://docs.github.com/en/apps/using-github-apps/installing-your-own-github-app).
+
+With the signed-in user's CEOS write access, the editor creates a session branch in CEOS and opens a PR against main. Contributors without upstream write access use their own fork through the existing contributor workflow.
 
 ## 3. Configure and sign in from the editor
 

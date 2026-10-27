@@ -27,6 +27,11 @@
     "active": true,
     "targets": "all",
     "icon": ["icons/icon.png", "icons/icon.icns", "icons/icon.ico"],
-    "macOS": { "minimumSystemVersion": "12.0" }
+    "macOS": {
+      "minimumSystemVersion": "12.0"
+    },
+    "publisher": "do-me",
+    "category": "Education",
+    "shortDescription": "Review and contribute CEOS Earth observation glossary terms."
   }
 }

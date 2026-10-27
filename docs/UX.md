@@ -291,3 +291,8 @@ New-term creation is part of this build: the creation dialog shows the full skel
 The footer exposes a zoom slider, increment/decrement, and reset from 75% to 200%. Ctrl/Cmd plus, minus, and zero use the same persisted preference. On reopening, restore window geometry and the saved workspace, including panels, filters, source views, reading offsets, and unfinished contribution text. Selecting a different session deliberately opens its editing page.
 
 Main is checked in the background at startup. Apply independent updates after a brief save-and-reload step; keep the workspace usable while the network request runs. For overlaps, show a persistent Review differences notice. Each term presents Latest GitHub and Your local version as rendered pages, with optional exact diffs against the common ancestor. Use GitHub version replaces only the reviewed term, retaining its prior revision locally; Keep my version retains the draft against the latest baseline. Unresolved conflicts prevent publication. Export a backup remains available. Frozen uploads recover before applying main updates.
+
+
+## Submitted contribution review
+
+Use a durable PR summary derived from the session link, rather than a transient success banner. The card states Open/Merged/Closed, the submitted term count, and whether saved local edits remain outside the PR. Its primary action opens the PR; the secondary action continues editing or starts a follow-up. Default to the full contribution after successful submission; distinguish it from Not submitted with an accessible pressed-state scope control. Retain comparison modes, export, source diffs, and upload recovery. After success, scroll to and focus the summary heading so the outcome is immediately visible.
