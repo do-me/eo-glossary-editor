@@ -48,18 +48,22 @@ jobs:
         include:
           - name: macOS Apple Silicon
             runner: macos-15
+            asset_os: macos
             target: aarch64-apple-darwin
             bundles: app,dmg
           - name: macOS Intel
             runner: macos-15-intel
+            asset_os: macos
             target: x86_64-apple-darwin
             bundles: app,dmg
           - name: Windows x64
             runner: windows-latest
+            asset_os: windows
             target: x86_64-pc-windows-msvc
             bundles: nsis,msi
           - name: Linux x64
             runner: ubuntu-22.04
+            asset_os: linux
             target: x86_64-unknown-linux-gnu
             bundles: deb,rpm,appimage
     name: Build ${{ matrix.name }}
@@ -94,7 +98,7 @@ jobs:
           releaseDraft: true
           uploadUpdaterJson: false
           uploadUpdaterSignatures: false
-          releaseAssetNamePattern: 'EO-Glossary-Editor_[version]_[platform]_[arch][setup][ext]'
+          releaseAssetNamePattern: 'EO-Glossary-Editor_[version]_${{ matrix.asset_os }}_[arch][setup][ext]'
           args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
   publish:
     needs: [prepare, build]
